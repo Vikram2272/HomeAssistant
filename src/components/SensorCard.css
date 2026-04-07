@@ -1,0 +1,53 @@
+.sensor-card.alert {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: linear-gradient(135deg, var(--bg-card), var(--warning-bg));
+}
+
+.sensor-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sensor-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sensor-value-wrap {
+  flex: 1;
+}
+
+.sensor-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sensor-value.alert {
+  color: var(--warning);
+}
+
+.sensor-unavail {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 2px;
+}
+
+.sensor-dc-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
