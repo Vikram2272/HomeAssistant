@@ -1,0 +1,65 @@
+.switch-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.switch-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.switch-icon.on {
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-light);
+}
+
+.switch-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Reuse toggle-switch and toggle-thumb from LightCard */
+.toggle-switch {
+  width: 46px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--border);
+  position: relative;
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+}
+
+.toggle-switch.on {
+  background: var(--accent);
+}
+
+.toggle-switch:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.25s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+.toggle-switch.on .toggle-thumb {
+  transform: translateX(20px);
+}
