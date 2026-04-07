@@ -32,13 +32,13 @@ const DOMAIN_LABELS = {
 
 const FILTER_DOMAINS = ['all', 'light', 'camera', 'switch', 'climate', 'sensor', 'binary_sensor', 'fan']
 
-export default function AddDeviceModal({ onClose }) {
-  const { entities, rooms, selectedRoom, dispatch } = useApp()
+export default function AddDeviceModal({ onClose, overrideRoomId }) {
+  const { entities, rooms, dispatch } = useApp()
   const [search, setSearch] = useState('')
   const [domainFilter, setDomainFilter] = useState('all')
   const [added, setAdded] = useState(new Set())
 
-  const currentRoom = rooms.find(r => r.id === selectedRoom)
+  const currentRoom = rooms.find(r => r.id === overrideRoomId)
   const existingDevices = new Set(currentRoom?.devices || [])
 
   const allEntities = useMemo(() => {
@@ -60,14 +60,14 @@ export default function AddDeviceModal({ onClose }) {
   }, [allEntities, search, domainFilter])
 
   const handleAdd = (entityId) => {
-    if (!selectedRoom) return
-    dispatch({ type: 'ADD_DEVICE_TO_ROOM', roomId: selectedRoom, entityId })
+    if (!overrideRoomId) return
+    dispatch({ type: 'ADD_DEVICE_TO_ROOM', roomId: overrideRoomId, entityId })
     setAdded(prev => new Set([...prev, entityId]))
   }
 
   const handleRemove = (entityId) => {
-    if (!selectedRoom) return
-    dispatch({ type: 'REMOVE_DEVICE_FROM_ROOM', roomId: selectedRoom, entityId })
+    if (!overrideRoomId) return
+    dispatch({ type: 'REMOVE_DEVICE_FROM_ROOM', roomId: overrideRoomId, entityId })
     setAdded(prev => { const s = new Set(prev); s.delete(entityId); return s })
   }
 

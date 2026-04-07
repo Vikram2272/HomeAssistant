@@ -1,0 +1,142 @@
+.room-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.room-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.room-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.room-section-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--accent-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.room-section-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-name-input {
+  font-size: 18px;
+  font-weight: 700;
+  background: var(--bg-input);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 2px 10px;
+  color: var(--text-primary);
+  outline: none;
+  width: 200px;
+}
+
+.room-device-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 2px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.room-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.room-hdr-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.room-hdr-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.room-hdr-btn.danger:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.room-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid var(--accent-glow);
+  transition: var(--transition);
+}
+
+.room-add-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.room-devices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.room-empty {
+  padding: 12px 0;
+}
+
+.room-empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  border: 2px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+  transition: var(--transition);
+}
+
+.room-empty-cta:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
