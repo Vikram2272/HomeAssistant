@@ -3,15 +3,14 @@ import react from '@vitejs/plugin-react'
 import http from 'http'
 import https from 'https'
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 3000,
-    host: true,
+// configureServer is a plugin hook, NOT a server config option.
+// It must live inside a plugin object in the plugins array.
+function haProxyPlugin() {
+  return {
+    name: 'ha-proxy',
     configureServer(server) {
-      // Dynamic reverse-proxy at /ha-proxy.
-      // Connect strips the prefix so req.url is already /api/...
-      // The real HA base URL is sent in the X-HA-URL request header.
+      // Connect strips the /ha-proxy prefix so req.url is already /api/...
+      // The real HA base URL comes from the X-HA-URL request header.
       server.middlewares.use('/ha-proxy', (req, res) => {
         const haUrl = req.headers['x-ha-url']
         if (!haUrl) {
@@ -33,17 +32,15 @@ export default defineConfig({
 
         const lib = target.protocol === 'https:' ? https : http
 
-        // Pass auth + content headers; drop browser-specific ones that confuse HA
-        const headers = {}
+        // Strip browser-specific headers that confuse HA
         const skip = new Set(['host', 'x-ha-url', 'origin', 'referer',
-          'sec-fetch-dest', 'sec-fetch-mode', 'sec-fetch-site', 'sec-ch-ua',
-          'sec-ch-ua-mobile', 'sec-ch-ua-platform'])
+          'sec-fetch-dest', 'sec-fetch-mode', 'sec-fetch-site',
+          'sec-ch-ua', 'sec-ch-ua-mobile', 'sec-ch-ua-platform', 'transfer-encoding'])
+        const headers = {}
         for (const [k, v] of Object.entries(req.headers)) {
           if (!skip.has(k.toLowerCase())) headers[k] = v
         }
         headers['host'] = target.host
-        // Remove transfer-encoding to avoid double-chunking
-        delete headers['transfer-encoding']
 
         const proxyReq = lib.request(
           {
@@ -54,7 +51,7 @@ export default defineConfig({
             headers,
           },
           (proxyRes) => {
-            console.log(`[HA Proxy] Response: ${proxyRes.statusCode}`)
+            console.log(`[HA Proxy] → ${proxyRes.statusCode}`)
             res.writeHead(proxyRes.statusCode, proxyRes.headers)
             proxyRes.pipe(res)
           }
@@ -68,7 +65,7 @@ export default defineConfig({
           }
         })
 
-        // GET / HEAD have no body — must call end() explicitly, not pipe()
+        // GET/HEAD have no body — pipe() won't end the request automatically
         if (req.method === 'GET' || req.method === 'HEAD') {
           proxyReq.end()
         } else {
@@ -76,5 +73,13 @@ export default defineConfig({
         }
       })
     },
+  }
+}
+
+export default defineConfig({
+  plugins: [react(), haProxyPlugin()],
+  server: {
+    port: 3000,
+    host: true,
   },
 })
