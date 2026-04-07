@@ -1,7 +1,19 @@
 export function buildBaseUrl(ip, port) {
-  const cleanIp = ip.trim().replace(/\/$/, '')
-  const proto = cleanIp.startsWith('http') ? '' : 'http://'
-  return `${proto}${cleanIp}:${port}`
+  let cleanIp = ip.trim().replace(/\/$/, '')
+  // Add protocol if missing
+  if (!cleanIp.startsWith('http://') && !cleanIp.startsWith('https://')) {
+    cleanIp = 'http://' + cleanIp
+  }
+  // Only append port if not already present in the URL
+  try {
+    const url = new URL(cleanIp)
+    if (!url.port) {
+      url.port = port
+    }
+    return url.origin
+  } catch {
+    return `${cleanIp}:${port}`
+  }
 }
 
 export async function fetchStates(baseUrl, token) {
