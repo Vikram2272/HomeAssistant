@@ -208,7 +208,17 @@ export function AppProvider({ children }) {
         },
       })
     } catch (err) {
-      dispatch({ type: 'SET_ERROR', error: err.message })
+      let errorMsg = err.message
+      if (/401/.test(err.message)) {
+        errorMsg = 'Invalid token — please check your Long-Lived Access Token and try again.'
+      } else if (/403/.test(err.message)) {
+        errorMsg = 'Access denied — your token may not have sufficient permissions.'
+      } else if (/Failed to fetch|NetworkError|ECONNREFUSED|net::ERR/i.test(err.message)) {
+        errorMsg = 'Cannot reach Home Assistant. Check the IP address, port, and make sure it is online.'
+      } else if (/404/.test(err.message)) {
+        errorMsg = 'Home Assistant API not found — verify the host address and port are correct.'
+      }
+      dispatch({ type: 'SET_ERROR', error: errorMsg })
     }
   }, [])
 
