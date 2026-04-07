@@ -1,34 +1,44 @@
 import React, { useState } from 'react'
-import Sidebar from './Sidebar'
-import Header from './Header'
-import RoomView from './RoomView'
+import TopBar from './TopBar'
+import RoomSection from './RoomSection'
 import AddDeviceModal from './AddDeviceModal'
 import AddRoomModal from './AddRoomModal'
+import { useApp } from '../context/AppContext'
+import { LayoutGrid } from 'lucide-react'
 import './Dashboard.css'
 
 export default function Dashboard() {
-  const [addDeviceOpen, setAddDeviceOpen] = useState(false)
+  const { rooms } = useApp()
+  const [addDeviceRoomId, setAddDeviceRoomId] = useState(null)
   const [addRoomOpen, setAddRoomOpen] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   return (
-    <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
-      <Sidebar
-        open={sidebarOpen}
-        onAddRoom={() => setAddRoomOpen(true)}
-      />
-      <div className="dashboard-main">
-        <Header
-          onToggleSidebar={() => setSidebarOpen(v => !v)}
-          onAddDevice={() => setAddDeviceOpen(true)}
-        />
-        <div className="dashboard-content">
-          <RoomView onAddDevice={() => setAddDeviceOpen(true)} />
-        </div>
-      </div>
+    <div className="dashboard">
+      <TopBar onAddRoom={() => setAddRoomOpen(true)} />
 
-      {addDeviceOpen && (
-        <AddDeviceModal onClose={() => setAddDeviceOpen(false)} />
+      <main className="dashboard-main">
+        {rooms.length === 0 ? (
+          <div className="page-empty">
+            <LayoutGrid size={48} strokeWidth={1} />
+            <h3>No rooms yet</h3>
+            <p>Add a room to get started.</p>
+          </div>
+        ) : (
+          rooms.map(room => (
+            <RoomSection
+              key={room.id}
+              room={room}
+              onAddDevice={() => setAddDeviceRoomId(room.id)}
+            />
+          ))
+        )}
+      </main>
+
+      {addDeviceRoomId && (
+        <AddDeviceModal
+          overrideRoomId={addDeviceRoomId}
+          onClose={() => setAddDeviceRoomId(null)}
+        />
       )}
       {addRoomOpen && (
         <AddRoomModal onClose={() => setAddRoomOpen(false)} />
