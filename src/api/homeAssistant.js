@@ -12,23 +12,35 @@ export function buildBaseUrl(ip, port) {
   }
 }
 
-// All REST calls go through the Vite dev-server proxy at /ha-proxy so the
-// browser never makes a cross-origin request (avoids CORS issues entirely).
-function proxyFetch(baseUrl, token, path, options = {}) {
-  return fetch(`/ha-proxy${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'X-HA-URL': baseUrl,
-      ...(options.headers || {}),
-    },
-  })
+// All REST calls route through the Vite dev-server proxy at /ha-proxy to avoid CORS.
+function proxyFetch(baseUrl, token, path, init = {}) {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'X-HA-URL': baseUrl,
+  }
+  if (init.body) headers['Content-Type'] = 'application/json'
+  return fetch(`/ha-proxy${path}`, { ...init, headers: { ...headers, ...(init.headers || {}) } })
+}
+
+async function throwOnError(res) {
+  if (res.ok) return
+  let detail = ''
+  try {
+    const ct = res.headers.get('content-type') || ''
+    if (ct.includes('json')) {
+      const body = await res.json()
+      detail = body.message || body.error || JSON.stringify(body)
+    } else {
+      const text = await res.text()
+      detail = text.slice(0, 200)
+    }
+  } catch {}
+  throw new Error(`${res.status}${detail ? ': ' + detail : ''}`)
 }
 
 export async function fetchStates(baseUrl, token) {
   const res = await proxyFetch(baseUrl, token, '/api/states')
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  await throwOnError(res)
   return res.json()
 }
 
@@ -37,14 +49,12 @@ export async function callService(baseUrl, token, domain, service, data) {
     method: 'POST',
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  await throwOnError(res)
   return res.json()
 }
 
 export async function fetchCameraSnapshot(baseUrl, token, entityId) {
-  const res = await proxyFetch(baseUrl, token, `/api/camera_proxy/${entityId}`, {
-    headers: { 'Content-Type': undefined },
-  })
+  const res = await proxyFetch(baseUrl, token, `/api/camera_proxy/${entityId}`)
   if (!res.ok) throw new Error(`Camera fetch failed: ${res.status}`)
   const blob = await res.blob()
   return URL.createObjectURL(blob)
