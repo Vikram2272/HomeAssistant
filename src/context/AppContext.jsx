@@ -59,7 +59,8 @@ function reducer(state, action) {
         ...state,
         loading: false,
         error: null,
-        connection: { ...state.connection, isConnected: true },
+        // Store ip/port/token in state so getBaseUrl()/getToken() work immediately
+        connection: { ip: action.ip, port: action.port, token: action.token, isConnected: true },
         entities: action.entities,
       }
 
@@ -192,7 +193,7 @@ export function AppProvider({ children }) {
       const entities = {}
       states.forEach(s => { entities[s.entity_id] = s })
 
-      dispatch({ type: 'SET_CONNECTED', entities })
+      dispatch({ type: 'SET_CONNECTED', entities, ip, port, token })
 
       // Update connection in storage as connected
       localStorage.setItem('ha_connection', JSON.stringify({ ip, port, token, isConnected: true }))
