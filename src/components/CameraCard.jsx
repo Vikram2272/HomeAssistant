@@ -21,7 +21,8 @@ export default function CameraCard({ entityId, entity, onRemove }) {
     setLoading(true)
     setError(null)
     try {
-      const url = await fetchCameraSnapshot(getBaseUrl(), getToken(), entityId)
+      const entityPicture = entity?.attributes?.entity_picture
+      const url = await fetchCameraSnapshot(getBaseUrl(), getToken(), entityId, entityPicture)
       if (currentBlobRef.current) URL.revokeObjectURL(currentBlobRef.current)
       currentBlobRef.current = url
       setImgUrl(url)

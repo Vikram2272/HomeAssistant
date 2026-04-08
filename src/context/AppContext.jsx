@@ -28,8 +28,13 @@ function loadConnection() {
   return { ip: '', port: '8123', token: '', isConnected: false }
 }
 
+const VALID_THEMES = ['midnight', 'ocean', 'forest', 'sunset', 'light']
+
 function loadTheme() {
-  return localStorage.getItem('ha_theme') || 'dark'
+  const saved = localStorage.getItem('ha_theme')
+  // migrate old 'dark' value
+  if (saved === 'dark') return 'midnight'
+  return VALID_THEMES.includes(saved) ? saved : 'midnight'
 }
 
 const initialState = {

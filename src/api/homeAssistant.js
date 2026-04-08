@@ -12,13 +12,12 @@ export function buildBaseUrl(ip, port) {
   }
 }
 
-// All REST calls route through the Vite dev-server proxy at /ha-proxy to avoid CORS.
 function proxyFetch(baseUrl, token, path, init = {}) {
   const headers = {
     Authorization: `Bearer ${token}`,
     'X-HA-URL': baseUrl,
+    ...(init.body ? { 'Content-Type': 'application/json' } : {}),
   }
-  if (init.body) headers['Content-Type'] = 'application/json'
   return fetch(`/ha-proxy${path}`, { ...init, headers: { ...headers, ...(init.headers || {}) } })
 }
 
@@ -31,8 +30,7 @@ async function throwOnError(res) {
       const body = await res.json()
       detail = body.message || body.error || JSON.stringify(body)
     } else {
-      const text = await res.text()
-      detail = text.slice(0, 200)
+      detail = (await res.text()).slice(0, 200)
     }
   } catch {}
   throw new Error(`${res.status}${detail ? ': ' + detail : ''}`)
@@ -50,21 +48,34 @@ export async function callService(baseUrl, token, domain, service, data) {
     body: JSON.stringify(data),
   })
   await throwOnError(res)
-  return res.json()
+  // HA may return empty body on some service calls
+  const text = await res.text()
+  if (!text.trim()) return []
+  try { return JSON.parse(text) } catch { return [] }
 }
 
-export async function fetchCameraSnapshot(baseUrl, token, entityId) {
-  const res = await proxyFetch(baseUrl, token, `/api/camera_proxy/${entityId}`)
-  if (!res.ok) throw new Error(`Camera fetch failed: ${res.status}`)
-  const blob = await res.blob()
-  return URL.createObjectURL(blob)
+export async function fetchCameraSnapshot(baseUrl, token, entityId, entityPicture) {
+  // entity_picture is a pre-signed relative URL that works for Ring and other cloud cameras
+  // e.g. /api/camera_proxy/camera.ring_front?token=xyz
+  const paths = entityPicture
+    ? [entityPicture, `/api/camera_proxy/${entityId}`]
+    : [`/api/camera_proxy/${entityId}`]
+
+  for (const path of paths) {
+    try {
+      const res = await proxyFetch(baseUrl, token, path)
+      if (res.ok) {
+        const blob = await res.blob()
+        return URL.createObjectURL(blob)
+      }
+    } catch {}
+  }
+  throw new Error('Camera snapshot unavailable')
 }
 
 export function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-  return result
-    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
-    : [255, 255, 255]
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+  return r ? [parseInt(r[1], 16), parseInt(r[2], 16), parseInt(r[3], 16)] : [255, 255, 255]
 }
 
 export function rgbToHex(rgb) {
@@ -77,9 +88,6 @@ export function getEntityDomain(entityId) {
 }
 
 export function formatEntityName(entityId) {
-  return entityId
-    .split('.')[1]
-    .split('_')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
+  return entityId.split('.')[1].split('_')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
